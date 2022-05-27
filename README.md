@@ -12,6 +12,6 @@ pip install polyloss
 from polyloss import PolyLoss
 
 ...
-criterion = PolyLoss(num_classes=1000)
+criterion = PolyLoss(epsilon=2.0)
 ...
 ```

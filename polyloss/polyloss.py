@@ -1,23 +1,19 @@
 import torch
-from torch.nn.functional import one_hot
+from torch.nn.functional import cross_entropy, one_hot, softmax
 
 
 class PolyLoss(torch.nn.Module):
     """
-    Implementation of poly loss.
-    Refers to `PolyLoss: A Polynomial Expansion Perspective of Classification Loss Functions (ICLR 2022)
+    PolyLoss: A Polynomial Expansion Perspective of Classification Loss Functions
     <https://arxiv.org/abs/2204.12511>
     """
 
-    def __init__(self, num_classes=1000, epsilon=1.0):
+    def __init__(self, epsilon=2.0):
         super().__init__()
         self.epsilon = epsilon
-        self.softmax = torch.nn.LogSoftmax(dim=-1)
-        self.criterion = torch.nn.CrossEntropyLoss(reduction='none')
-        self.num_classes = num_classes
 
-    def forward(self, output, target):
-        ce = self.criterion(output, target)
-        pt = one_hot(target, num_classes=self.num_classes) * self.softmax(output)
+    def forward(self, outputs, targets):
+        ce = cross_entropy(outputs, targets)
+        pt = one_hot(targets, outputs.size()[1]) * softmax(outputs, 1)
 
-        return (ce + self.epsilon * (1.0 - pt.sum(dim=-1))).mean()
+        return (ce + self.epsilon * (1.0 - pt.sum(dim=1))).mean()
